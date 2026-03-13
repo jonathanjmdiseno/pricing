@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarifario Interactivo | Caracas Creative Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --accent: #38bdf8;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-card: #ffffff;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--light);
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 { color: var(--dark); font-size: 2.8rem; margin-bottom: 10px; }
+        .subtitle { color: #64748b; font-size: 1.2rem; }
+
+        /* Panel de Control Moderno */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-weight: 600; font-size: 0.9rem; color: var(--dark); }
+
+        input {
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        .btn {
+            background: var(--dark);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn:hover { background: var(--primary); transform: translateY(-1px); }
+
+        /* Estilos de Tabla */
+        .table-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        
+        thead { background: var(--dark); color: white; }
+        th { padding: 20px; text-align: left; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .cat-header {
+            background: #f1f5f9;
+            color: var(--primary);
+            font-weight: 800;
+            padding: 15px 20px;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .service-row { 
+            cursor: pointer; 
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        
+        .service-row:hover { background: #f8fafc; }
+        
+        td { padding: 18px 20px; }
+
+        .price-val { font-weight: 700; color: var(--dark); font-size: 1.1rem; text-align: right; }
+        .old-price { text-decoration: line-through; color: #94a3b8; font-size: 0.85rem; margin-right: 8px; font-weight: 400; }
+
+        .desc-panel {
+            display: none;
+            background: #fafcfd;
+            padding: 25px;
+            border-left: 5px solid var(--primary);
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        /* Secciones de Información */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 50px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: 0.3s;
+        }
+
+        .info-card:hover { border-color: var(--primary); }
+        .info-card h3 { color: var(--primary); margin-top: 0; font-size: 1.2rem; }
+        .info-card ul { padding-left: 20px; margin: 0; }
+
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: 1fr; }
+            h1 { font-size: 2rem; }
+            .price-val { text-align: left; margin-top: 10px; display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Caracas Creative Studio</h1>
+        <p class="subtitle">Tarifario de Servicios Creativos 2026</p>
+    </header>
+
+    <div class="dashboard">
+        <div class="input-group">
+            <label>🔍 Buscar servicio</label>
+            <input type="text" id="searchInput" placeholder="Ej: Logo, Web, Video, Brochure..." onkeyup="filterTable()">
+        </div>
+        <div class="input-group">
+            <label>🎟️ Cupón de Descuento</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="couponInput" placeholder="Código">
+                <button class="btn" onclick="applyPromo()">Aplicar</button>
+            </div>
+            <div id="promoMsg" style="font-size: 0.85rem; margin-top: 8px; min-height: 1.2rem;"></div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Servicio / Producto</th>
+                    <th style="text-align: right;">Precio (USD)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>📦 Entrega de Productos</h3>
+            <p>Los productos finales se entregan en formato digital mediante Google Drive o WeTransfer.</p>
+            <ul>
+                <li><strong>Gráficos:</strong> AI, PDF, JPG, PNG.</li>
+                <li><strong>Web:</strong> Acceso a CMS y archivos fuente.</li>
+                <li><strong>Video:</strong> MP4 4K/1080p.</li>
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3>💳 Términos de Pago</h3>
+            <p>Trabajamos bajo la modalidad <strong>50/50</strong>:</p>
+            <ul>
+                <li>50% para iniciar el proyecto.</li>
+                <li>50% previo al envío de archivos finales.</li>
+                <li>Zelle, PayPal, Binance o Bancos Nacionales.</li>
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3>🕒 Tiempo de Respuesta</h3>
+            <p>Los tiempos varían según el servicio:</p>
+            <ul>
+                <li><strong>Diseño:</strong> 3-5 días hábiles.</li>
+                <li><strong>Web:</strong> 15-25 días hábiles.</li>
+                <li><strong>Audio:</strong> 2-4 días hábiles.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+// Códigos promocionales disponibles
+const promoCodes = {
+    'PROMO10': 0.10,
+    'CREATIVE20': 0.20,
+    'STUDIO30': 0.30,
+    'MASTER40': 0.40,
+    'SPECIAL50': 0.50
+};
+
+// Base de datos completa de servicios
+const servicesData = [
+    { cat: "DISEÑO GRÁFICO", items: [
+        { n: "Flyer", p: 46, d: "Diseño publicitario de una cara. Ideal para redes o eventos." },
+        { n: "Brochure", p: 166, d: "Diseño editorial de varias páginas para presentación corporativa." },
+        { n: "DL / Bifold / Trifold Brochure", p: 83, d: "Folletos plegables estándar para información compacta." },
+        { n: "Poster", p: 117, d: "Diseño de cartelera para gran formato." },
+        { n: "Stationery", p: 573, d: "Identidad completa: hojas, sobres, carpetas y facturas." },
+        { n: "Business cards", p: 82, d: "Diseño profesional de tarjetas de presentación." },
+        { n: "Catalogs", p: 298, d: "Diagramación de productos con estética comercial." },
+        { n: "Dossiers", p: 311, d: "Informes técnicos o de ventas de alto nivel." },
+        { n: "Banners prints", p: 296, d: "Gráficos para banners físicos de ferias o locales." },
+        { n: "Banners web", p: 46, d: "Piezas publicitarias para Google Ads o sitios web." },
+        { n: "T-shirt", p: 153, d: "Diseño artístico optimizado para impresión textil." }
+    ]},
+    { cat: "BRANDING & IDENTIDAD", items: [
+        { n: "Creative conceptualization", p: 2874, d: "Investigación, moodboard y creación del ADN de marca." },
+        { n: "Logotipo", p: 511, d: "Diseño de logo con 3 propuestas y manual básico." },
+        { n: "Brand book", p: 726, d: "Manual detallado de tipografía, colores y usos prohibidos." }
+    ]},
+    { cat: "GESTIÓN DE REDES SOCIALES", items: [
+        { n: "Social Media Post (Individual)", p: 46, d: "Diseño de una sola pieza gráfica." },
+        { n: "8 Posts + 4 Historias", p: 187, d: "Pack mensual de mantenimiento básico." },
+        { n: "12 Posts + 6 Historias", p: 263, d: "Pack intermedio para mayor presencia." },
+        { n: "20 Posts + 7 Historias", p: 343, d: "Gestión completa de contenido mensual." }
+    ]},
+    { cat: "DISEÑO & DESARROLLO WEB", items: [
+        { n: "Landing Page", p: 454, d: "Página de aterrizaje enfocada en ventas/captación." },
+        { n: "One Page (5 secciones)", p: 524, d: "Sitio web completo en una sola navegación fluida." },
+        { n: "Sitio Básico Profesional", p: 1300, d: "Web multi-página profesional para empresas." },
+        { n: "Ecommerce / Catálogo", p: 2255, d: "Tienda online con carrito y pagos." },
+        { n: "LMS (Cursos Online)", p: 2995, d: "Plataforma para educación digital." },
+        { n: "Mantenimiento + SEO", p: 350, d: "Soporte técnico y optimización mensual en Google." }
+    ]},
+    { cat: "AUDIOVISUAL & VIDEO", items: [
+        { n: "Video para Redes (por minuto)", p: 100, d: "Edición dinámica para Reels, TikTok o Shorts." },
+        { n: "Documentales/Películas (min)", p: 45, d: "Edición narrativa de larga duración." },
+        { n: "Motion Graphics 2D (por min)", p: 350, d: "Animaciones explicativas de alta calidad." },
+        { n: "Voiceover / Dubbing SPA", p: 75, d: "Locución profesional (por cada 150 palabras)." }
+    ]},
+    { cat: "MÚSICA & AUDIO", items: [
+        { n: "Jingles Originales (30s)", p: 400, d: "Música original para comerciales." },
+        { n: "Audio Logo (5s)", p: 300, d: "Identidad sonora para tu logotipo." },
+        { n: "Music Production (Tema)", p: 850, d: "Producción integral de una pieza musical." },
+        { n: "Mixing & Mastering (10 tracks)", p: 350, d: "Finalización de audio profesional." }
+    ]}
+];
+
+let activeDiscount = 0;
+
+function renderTable(filter = '') {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    servicesData.forEach(group => {
+        const filteredItems = group.items.filter(i => 
+            i.n.toLowerCase().includes(filter.toLowerCase()) || 
+            group.cat.toLowerCase().includes(filter.toLowerCase())
+        );
+        
+        if (filteredItems.length > 0) {
+            tbody.innerHTML += `<tr><td colspan="2" class="cat-header">${group.cat}</td></tr>`;
+            
+            filteredItems.forEach((item, index) => {
+                const finalP = item.p * (1 - activeDiscount);
+                const rowId = `row-${group.cat.replace(/\W/g, '')}-${index}`;
+                
+                tbody.innerHTML += `
+                    <tr class="service-row" onclick="toggle('${rowId}')">
+                        <td>
+                            <strong>${item.n}</strong><br>
+                            <small style="color:#94a3b8">Ver descripción ↓</small>
+                        </td>
+                        <td class="price-val">
+                            ${activeDiscount > 0 ? `<span class="old-price">$${item.p.toFixed(2)}</span>` : ''}
+                            $${finalP.toFixed(2)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="desc-panel" id="${rowId}">
+                            <strong>¿Qué incluye?:</strong><br>
+                            ${item.d}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    });
+}
+
+function applyPromo() {
+    const input = document.getElementById('couponInput');
+    const code = input.value.trim().toUpperCase();
+    const msg = document.getElementById('promoMsg');
+    
+    if (promoCodes.hasOwnProperty(code)) {
+        activeDiscount = promoCodes[code];
+        const percent = activeDiscount * 100;
+        msg.innerText = `✅ ¡Cupón activado! -${percent}% de descuento.`;
+        msg.style.color = "var(--success)";
+        input.style.borderColor = "var(--success)";
+    } else if (code === "") {
+        activeDiscount = 0;
+        msg.innerText = "";
+        input.style.borderColor = "var(--border)";
+    } else {
+        activeDiscount = 0;
+        msg.innerText = "❌ Código no válido.";
+        msg.style.color = "var(--danger)";
+        input.style.borderColor = "var(--danger)";
+    }
+    
+    renderTable(document.getElementById('searchInput').value);
+}
+
+function toggle(id) {
+    const el = document.getElementById(id);
+    const isShowing = el.style.display === 'table-cell';
+    document.querySelectorAll('.desc-panel').forEach(p => p.style.display = 'none');
+    el.style.display = isShowing ? 'none' : 'table-cell';
+}
+
+function filterTable() {
+    const val = document.getElementById('searchInput').value;
+    renderTable(val);
+}
+
+// Carga Inicial
+renderTable();
+</script>
+
+</body>
+</html>
